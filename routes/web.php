@@ -1,7 +1,5 @@
 <?php
 
-/** @var \Laravel\Lumen\Routing\Router $router */
-
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -16,9 +14,17 @@
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
-$router->post(
-    'auth/login',
-    [
-       'uses' => 'AuthController@authenticate'
-    ]
-);
+
+$router->post('auth/login', [
+    'as' => 'auth.login',
+    'uses' => 'AuthController@login'
+]);
+
+$router->group(['middleware' => 'auth'], function () use ($router) {
+    $router->get('user', [
+        'as' => 'user',
+        function () {
+            return response()->json(Auth::user());
+        }]);
+
+});
