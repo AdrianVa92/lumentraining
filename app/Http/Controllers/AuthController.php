@@ -1,11 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
-use Validator;
-use App\User;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
-use Firebase\JWT\ExpiredException;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Lumen\Routing\Controller as BaseController;
 
@@ -17,7 +17,6 @@ class AuthController extends BaseController
      * @var \Illuminate\Http\Request
      */
     private $request;
-
     /**
      * Create a new controller instance.
      *
@@ -28,7 +27,6 @@ class AuthController extends BaseController
     {
         $this->request = $request;
     }
-
     /**
      * Create a new token.
      *
@@ -41,46 +39,71 @@ class AuthController extends BaseController
             'iss' => "lumen-jwt", // Issuer of the token
             'sub' => $user->id, // Subject of the token
             'iat' => time(), // Time when JWT was issued.
-            'exp' => time() + 60 * 60 // Expiration time
+            'exp' => time() + 3600*3600 // Expiration time
         ];
-
-        // As you can see we are passing `JWT_SECRET` as the second parameter that will
-        // be used to decode the token in the future.
+        
         return JWT::encode($payload, env('JWT_SECRET'));
     }
-
     /**
      * Authenticate a user and return the token if the provided credentials are correct.
      *
+     * @param  \App\User   $user
      * @return mixed
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function login()
+    public function authenticate(User $user)
     {
         $this->validate($this->request, [
             'email'     => 'required|email',
             'password'  => 'required'
         ]);
-        // Find the user by email
         $user = User::where('email', $this->request->input('email'))->first();
         if (!$user) {
-            // You wil probably have some sort of helpers or whatever
-            // to make sure that you have the same response format for
-            // differents kind of responses. But let's return the
-            // below respose for now.
             return response()->json([
                 'error' => 'Email does not exist.'
             ], 400);
         }
-        // Verify the password and generate the token
         if (Hash::check($this->request->input('password'), $user->password)) {
-            return response()->json([
-                'token' => $this->jwt($user)
+            return response()->json(['success'=> true,
+                'access_token' => $this->jwt($user)
             ], 200);
         }
-        // Bad Request response
         return response()->json([
             'error' => 'Email or password is wrong.'
         ], 400);
+    }
+
+    /**
+     * Registration method
+     *
+     * @param Request $request registration request
+     *
+     * @return array
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:users',
+            'password' => 'required',
+            'email' => 'required|email|unique:users'
+        ]);
+
+        if ($validator->fails()) {
+            return array(
+                'success' => false,
+                'message' => $validator->errors()->all()
+            );
+        }
+
+        $user =  new User;
+
+        $user->name= $request->name;
+        $user->email= $request->email;
+        $user->password= app('hash')->make($request->password);
+        $user->save();
+
+        unset($user->password);
+
+        return Response::json(['success' => true, 'user' => $user], 200);
     }
 }

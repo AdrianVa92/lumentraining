@@ -10,12 +10,27 @@
 | database. Just tell the factory how a default model should look.
 |
 */
-use Illuminate\Support\Facades\Hash;
 
-$factory->define(App\User::class, function (Faker\Generator $faker) {
+$factory->define(App\Models\Category::class, function (Faker\Generator $faker) {
     return [
-        'name' => $faker->name,
-        'email' => $faker->email,
-        'password' => Hash::make('secret'),
+        'name' => $faker->word,
+    ];
+});
+
+$factory->define(App\Models\Ticket::class, function (Faker\Generator $faker) {
+    return [
+        'name' => $faker->word,
+        'description' => $faker->word,
+        'price' => $faker->word,
+        'quantity' => $faker->word,
+
+    ];
+});
+
+$factory->define(App\Models\User::class, function (Faker\Generator $faker) {
+    return [
+        'name'     => $faker->name,
+        'email'    => $faker->unique()->email,
+        'password' => password_hash('12345', PASSWORD_BCRYPT),
     ];
 });

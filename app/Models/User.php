@@ -3,31 +3,72 @@
 namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
-class User extends Model implements AuthenticatableContract, AuthorizableContract
+class User extends Model
 {
-    use Authenticatable, Authorizable, HasFactory;
+    use Authenticatable, Authorizable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    protected $fillable = [
-        'name', 'email',
-    ];
+    public function categories()
+    {
+        return $this->hasMany(Category::class);
+    }
 
     /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    protected $hidden = [
-        'password',
-    ];
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+    public function addCategory(Category $category)
+    {
+        return $this->categories()->save($category);
+    }
+
+    /**
+     * @param $id
+     * @return array
+     */
+    public function deleteCategory($categoryId)
+    {
+        $this->categories()->find($categoryId)->delete();
+        return ["message"=>"The shopping list has been deleted"];
+    }
+
+    /**
+     * @param $categoryName
+     * @return int
+     */
+    public function hasDuplicateCategory($categoryName)
+    {
+        return $this->categories()->where("name", $categoryName)->count();
+    }
+
+    /**
+     * @param Ticket $ticket
+     * @param $category_id
+     * @return mixed
+     */
+    public function addTicket(Ticket $ticket, $category_id)
+    {
+        return $this->categories()->find($category_id)->tickets()->create([
+            "name"=>$ticket->name,
+            "description"=>$ticket->description,
+            "user_id"=> $this->id
+        ]);
+    }
+
+    /**
+     * @param $category_id
+     * @param $ticketName
+     * @return mixed
+     */
+    public function hasDuplicateTicket($category_id, $ticketName)
+    {
+        return $this->categories()->find($category_id)->tickets()->where("name", $ticketName)->count();
+    }
 }
