@@ -67,7 +67,7 @@ class CategoriesController extends Controller
             $response = Response::json(
                 [
                     "error"=>[
-                        "message" => "The shopping list cannot be found."
+                        "message" => "Categories cannot be found."
                     ]],
                 400
             );
@@ -76,14 +76,14 @@ class CategoriesController extends Controller
         $isCategoryDuplicate = $request->auth->hasDuplicateCategory($request->name);
         if ($isCategoryDuplicate) {
             return Response::json(
-                ["message"=> "The shopping list already exists",
+                ["message"=> "Categories already exists",
                     "data"=>$existingCategory],
                 400
             );
         }
         $updatedCategory=$existingCategory->update($request->all());
         return Response::json(
-            ["message"=> "The shopping list has been updated successfully",
+            ["message"=> "Categories has been updated successfully",
               "data"=> $updatedCategory],
             200
         );
@@ -101,7 +101,7 @@ class CategoriesController extends Controller
             $response = Response::json(
                 [
                 "error"=>[
-                    "message" => "The shopping list cannot be found."
+                    "message" => "Categories cannot be found."
             ]],
                 400
             );
