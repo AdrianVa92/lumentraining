@@ -10,20 +10,25 @@
 | database. Just tell the factory how a default model should look.
 |
 */
+use App\Models\Category;
+use App\Models\User;
 
-$factory->define(App\Models\Category::class, function (Faker\Generator $faker) {
+$factory->define(\App\Models\Category::class, function (Faker\Generator $faker) {
+    $user = User::pluck('id')->toArray();
     return [
         'name' => $faker->word,
+        'user_id' => $faker->randomElement($user),
     ];
 });
 
-$factory->define(App\Models\Ticket::class, function (Faker\Generator $faker) {
+$factory->define(\App\Models\Ticket::class, function (Faker\Generator $faker) {
+    $user = User::pluck('id')->toArray();
+    $category = Category::pluck('id')->toArray();
     return [
         'name' => $faker->word,
         'description' => $faker->word,
-        'price' => $faker->word,
-        'quantity' => $faker->word,
-
+        'user_id' => $faker->randomElement($user),
+        'category_id' => $faker->randomElement($category),
     ];
 });
 
