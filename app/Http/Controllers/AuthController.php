@@ -36,13 +36,13 @@ class AuthController extends BaseController
     protected function jwt(User $user)
     {
         $payload = [
-            'iss' => "lumen-jwt", // Issuer of the token
+            'iss' => env('APP_ENV')."lumen-jwt", // Issuer of the token
             'sub' => $user->id, // Subject of the token
             'iat' => time(), // Time when JWT was issued.
             'exp' => time() + 3600*3600 // Expiration time
         ];
-        
-        return JWT::encode($payload, env('JWT_SECRET'));
+        $secret = env('JWT_SECRET') . '@adrian-valbuena';
+        return JWT::encode($payload, $secret, "HS256");
     }
     /**
      * Authenticate a user and return the token if the provided credentials are correct.
