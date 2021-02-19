@@ -36,7 +36,7 @@ class User extends Model
     public function deleteCategory($categoryId)
     {
         $this->categories()->find($categoryId)->delete();
-        return ["message"=>"The shopping list has been deleted"];
+        return ["message"=>"Category has been deleted"];
     }
 
     /**
